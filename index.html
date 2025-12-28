@@ -3,66 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P2P Advanced Messenger</title>
+    <title>Global Private Messenger 2025</title>
     <style>
-        :root { --bg: #0d1117; --panel: #161b22; --green: #238636; --blue: #1f6feb; --text: #c9d1d9; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { width: 95%; max-width: 500px; background: var(--panel); padding: 25px; border-radius: 15px; border: 1px solid #30363d; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input { width: 100%; background: #0d1117; border: 1px solid #30363d; color: white; padding: 12px; margin-bottom: 10px; border-radius: 8px; box-sizing: border-box; outline: none; }
-        button { padding: 12px; border-radius: 8px; border: none; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; background: var(--green); }
+        :root { --bg: #0b141a; --header: #202c33; --panel: #111b21; --accent: #00a884; --text: #e9edef; --msg-me: #005c4b; --msg-peer: #202c33; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar Styles */
+        .sidebar { width: 30%; border-right: 1px solid #30363d; background: var(--panel); display: flex; flex-direction: column; min-width: 280px; }
+        .sidebar-header { background: var(--header); padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .search-bar { padding: 10px; background: var(--panel); }
+        .search-bar input { width: 90%; background: #202c33; border: none; padding: 8px; border-radius: 8px; color: white; }
+        .friend-list { flex: 1; overflow-y: auto; }
+        .friend-item { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; display: flex; align-items: center; transition: 0.3s; }
+        .friend-item:hover { background: #2a3942; }
+        .friend-item .avatar { width: 45px; height: 45px; border-radius: 50%; background: #555; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        /* Main Chat Styles */
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: #0b141a url('user-images.githubusercontent.com'); background-blend-mode: overlay; }
+        .chat-header { background: var(--header); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        .msg { max-width: 65%; padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; font-size: 14.5px; position: relative; }
+        .msg.me { align-self: flex-end; background: var(--msg-me); }
+        .msg.peer { align-self: flex-start; background: var(--msg-peer); }
+        .chat-input { background: var(--header); padding: 10px 20px; display: flex; align-items: center; }
+        .chat-input input { flex: 1; background: #2a3942; border: none; padding: 12px; border-radius: 8px; color: white; margin-right: 10px; }
+        
+        /* Floating Button & Modal */
+        .fab { position: fixed; bottom: 20px; left: 20px; width: 55px; height: 55px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 100; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--panel); padding: 25px; border-radius: 12px; width: 300px; text-align: center; }
+        
+        /* Utilities */
         .hidden { display: none; }
-        
-        /* Friend List Style */
-        #friend-list { margin-top: 15px; border-top: 1px solid #333; padding-top: 10px; }
-        .friend-item { background: #21262d; padding: 10px; margin-bottom: 5px; border-radius: 5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
-        .friend-item:hover { background: #30363d; }
-        
-        /* Chat Window Style */
-        #chat-window { height: 300px; overflow-y: auto; background: #0d1117; border: 1px solid #30363d; padding: 10px; border-radius: 8px; display: flex; flex-direction: column; }
-        .msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 15px; max-width: 80%; font-size: 14px; }
-        .msg.me { background: var(--blue); align-self: flex-end; color: white; }
-        .msg.peer { background: #30363d; align-self: flex-start; color: white; }
+        .menu-dots { cursor: pointer; padding: 5px; font-size: 20px; }
+        .dropdown { position: absolute; right: 20px; top: 60px; background: var(--header); border: 1px solid #333; padding: 10px; border-radius: 8px; z-index: 50; }
+        .dropdown div { padding: 10px; cursor: pointer; }
+        .dropdown div:hover { background: #2a3942; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- AUTH SCREEN -->
-    <div id="auth-screen">
-        <h2>🔐 Private Login</h2>
-        <input type="text" id="username" placeholder="Apni Unique ID (Username)">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="handleAuth()" style="width: 100%;">Login / Register</button>
+<!-- Login Screen -->
+<div id="auth-screen" style="position:fixed; width:100%; height:100%; background:var(--bg); z-index:2000; display:flex; align-items:center; justify-content:center;">
+    <div style="background:var(--panel); padding:40px; border-radius:15px; text-align:center; width:300px;">
+        <h2>🔐 Welcome</h2>
+        <input type="text" id="username" placeholder="Username" style="width:100%; padding:12px; margin-bottom:10px; background:#202c33; border:none; color:white; border-radius:8px;">
+        <input type="password" id="password" placeholder="Password" style="width:100%; padding:12px; margin-bottom:20px; background:#202c33; border:none; color:white; border-radius:8px;">
+        <button onclick="handleAuth()" style="width:100%; padding:12px; background:var(--accent); border:none; color:white; border-radius:8px; cursor:pointer; font-weight:bold;">Enter Chat</button>
     </div>
+</div>
 
-    <!-- MAIN DASHBOARD (Dost Add karne ke liye) -->
-    <div id="dashboard" class="hidden">
-        <h3>Namaste, <span id="user-display" style="color:var(--green)"></span></h3>
-        <p style="font-size: 12px; color: #8b949e;">Naye dost ko add karein unka Username dalkar:</p>
-        <div style="display: flex; gap: 5px;">
-            <input type="text" id="new-friend-id" placeholder="Dost ki ID..." style="margin: 0;">
-            <button onclick="addFriend()" style="background: var(--blue);">Add Friend</button>
-        </div>
-
-        <div id="friend-list">
-            <h4>Aapke Dost (Click to Chat):</h4>
-            <div id="friends-container"></div>
-        </div>
-        <button onclick="location.reload()" style="background:#da3633; width:100%; margin-top:20px;">Logout</button>
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <div id="my-avatar" class="avatar" style="background:var(--accent)">M</div>
+        <div class="menu-dots" onclick="toggleMainDropdown()">⋮</div>
     </div>
+    <div class="search-bar"><input type="text" placeholder="Dost ko search karein..."></div>
+    <div class="friend-list" id="friend-container"></div>
+    <div class="fab" onclick="showAddFriend()">+</div>
+</div>
 
-    <!-- PRIVATE CHAT SCREEN -->
-    <div id="chat-screen" class="hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h4 id="chatting-with">Chatting with...</h4>
-            <button onclick="backToDashboard()" style="background: #30363d; padding: 5px 10px;">Back</button>
+<!-- Main Chat Area -->
+<div class="main-chat" id="chat-welcome">
+    <div style="margin:auto; text-align:center;">
+        <img src="wa-styles.web.app" style="width:200px; opacity:0.1;">
+        <p style="color:#8696a0;">Chat start karne ke liye dost ko chunein</p>
+    </div>
+</div>
+
+<div class="main-chat hidden" id="chat-active">
+    <div class="chat-header">
+        <div style="display:flex; align-items:center;">
+            <div id="chat-avatar" class="avatar" style="width:35px; height:35px; border-radius:50%; background:#555; margin-right:12px; display:flex; align-items:center; justify-content:center; font-size:14px;">P</div>
+            <b id="active-peer-name">Dost ka naam</b>
         </div>
-        <div id="chat-window"></div>
-        <div style="display:flex; gap:5px; margin-top:10px;">
-            <input type="text" id="msg-input" placeholder="Type message..." style="margin:0;">
-            <button onclick="sendMsg()" style="width:80px; background:var(--blue); padding:0;">Send</button>
+        <div class="menu-dots">⋮</div>
+    </div>
+    <div class="chat-messages" id="messages-container"></div>
+    <div class="chat-input">
+        <input type="text" id="msg-input" placeholder="Type a message...">
+        <button onclick="sendMsg()" style="background:none; border:none; color:var(--accent); font-size:24px; cursor:pointer;">➤</button>
+    </div>
+</div>
+
+<!-- Floating Windows (Modals) -->
+<div id="add-friend-modal" class="modal hidden">
+    <div class="modal-content">
+        <h3>Add New Friend</h3>
+        <input type="text" id="new-friend-id" placeholder="Username ya Code dalein" style="width:100%; padding:10px; margin-bottom:15px; background:#202c33; border:none; color:white; border-radius:8px;">
+        <div style="display:flex; gap:10px;">
+            <button onclick="closeModals()" style="flex:1; background:#555; border:none; padding:10px; border-radius:8px; color:white;">Cancel</button>
+            <button onclick="addFriend()" style="flex:1; background:var(--accent); border:none; padding:10px; border-radius:8px; color:white;">Add</button>
         </div>
     </div>
+</div>
+
+<div id="main-dropdown" class="dropdown hidden">
+    <div onclick="location.reload()">Logout</div>
+    <div onclick="alert('My Code: ' + btoa(currentUser))">Show My Code</div>
 </div>
 
 <script>
@@ -72,92 +111,77 @@
     function handleAuth() {
         const u = document.getElementById('username').value.trim();
         const p = document.getElementById('password').value;
-        if (!u || !p) return alert("ID aur Password dalein!");
-
-        if (!localStorage.getItem("u_" + u)) {
-            localStorage.setItem("u_" + u, p);
-        } else if (localStorage.getItem("u_" + u) !== p) {
-            return alert("Galat Password!");
-        }
-
+        if (!u || !p) return;
         currentUser = u;
-        showDashboard();
-    }
-
-    function showDashboard() {
         document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('dashboard').classList.remove('hidden');
-        document.getElementById('chat-screen').classList.add('hidden');
-        document.getElementById('user-display').innerText = currentUser;
+        document.getElementById('my-avatar').innerText = u[0].toUpperCase();
         renderFriends();
     }
 
-    function addFriend() {
-        const friendID = document.getElementById('new-friend-id').value.trim();
-        if (!friendID || friendID === currentUser) return alert("Sahi ID dalein!");
+    function toggleMainDropdown() { document.getElementById('main-dropdown').classList.toggle('hidden'); }
+    function showAddFriend() { document.getElementById('add-friend-modal').classList.remove('hidden'); }
+    function closeModals() { document.getElementById('add-friend-modal').classList.add('hidden'); }
 
-        let friends = JSON.parse(localStorage.getItem("friends_" + currentUser) || "[]");
-        if (!friends.includes(friendID)) {
-            friends.push(friendID);
-            localStorage.setItem("friends_" + currentUser, JSON.stringify(friends));
+    function addFriend() {
+        const fID = document.getElementById('new-friend-id').value.trim();
+        if (!fID || fID === currentUser) return;
+        let friends = JSON.parse(localStorage.getItem("f_" + currentUser) || "[]");
+        if (!friends.includes(fID)) {
+            friends.push(fID);
+            localStorage.setItem("f_" + currentUser, JSON.stringify(friends));
             renderFriends();
         }
-        document.getElementById('new-friend-id').value = "";
+        closeModals();
     }
 
     function renderFriends() {
-        const container = document.getElementById('friends-container');
-        container.innerHTML = "";
-        let friends = JSON.parse(localStorage.getItem("friends_" + currentUser) || "[]");
-        
+        const cont = document.getElementById('friend-container');
+        cont.innerHTML = "";
+        let friends = JSON.parse(localStorage.getItem("f_" + currentUser) || "[]");
         friends.forEach(f => {
             const div = document.createElement('div');
             div.className = 'friend-item';
-            div.innerHTML = `<span>👤 ${f}</span> <button onclick="startChat('${f}')" style="background:var(--blue); padding:5px;">Chat</button>`;
-            container.appendChild(div);
+            div.onclick = () => openChat(f);
+            div.innerHTML = `<div class="avatar">${f[0].toUpperCase()}</div><div><b>${f}</b><br><small style="color:#8696a0">Click to chat</small></div>`;
+            cont.appendChild(div);
         });
     }
 
-    function startChat(peerID) {
-        activePeer = peerID;
-        document.getElementById('dashboard').classList.add('hidden');
-        document.getElementById('chat-screen').classList.remove('hidden');
-        document.getElementById('chatting-with').innerText = "Chat: " + peerID;
+    function openChat(peer) {
+        activePeer = peer;
+        document.getElementById('chat-welcome').classList.add('hidden');
+        document.getElementById('chat-active').classList.remove('hidden');
+        document.getElementById('active-peer-name').innerText = peer;
+        document.getElementById('chat-avatar').innerText = peer[0].toUpperCase();
         loadMessages();
-    }
-
-    function backToDashboard() {
-        showDashboard();
     }
 
     function sendMsg() {
         const inp = document.getElementById('msg-input');
         if (!inp.value) return;
-
-        const chatKey = `chat_${currentUser}_${activePeer}`;
-        let msgs = JSON.parse(localStorage.getItem(chatKey) || "[]");
-        msgs.push({ sender: "me", text: inp.value });
-        localStorage.setItem(chatKey, JSON.stringify(msgs));
-
+        const key = `c_${currentUser}_${activePeer}`;
+        let msgs = JSON.parse(localStorage.getItem(key) || "[]");
+        msgs.push({ s: "me", t: inp.value });
+        localStorage.setItem(key, JSON.stringify(msgs));
         appendMsg("me", inp.value);
         inp.value = "";
     }
 
     function loadMessages() {
-        const box = document.getElementById('chat-window');
-        box.innerHTML = "";
-        const chatKey = `chat_${currentUser}_${activePeer}`;
-        let msgs = JSON.parse(localStorage.getItem(chatKey) || "[]");
-        msgs.forEach(m => appendMsg(m.sender, m.text));
+        const cont = document.getElementById('messages-container');
+        cont.innerHTML = "";
+        const key = `c_${currentUser}_${activePeer}`;
+        let msgs = JSON.parse(localStorage.getItem(key) || "[]");
+        msgs.forEach(m => appendMsg(m.s, m.t));
     }
 
-    function appendMsg(sender, text) {
-        const box = document.getElementById('chat-window');
+    function appendMsg(s, t) {
+        const cont = document.getElementById('messages-container');
         const div = document.createElement('div');
-        div.className = `msg ${sender}`;
-        div.innerText = text;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
+        div.className = `msg ${s}`;
+        div.innerText = t;
+        cont.appendChild(div);
+        cont.scrollTop = cont.scrollHeight;
     }
 </script>
 </body>
