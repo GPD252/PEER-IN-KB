@@ -3,43 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global P2P ID Messenger</title>
-    <!-- Firebase SDK 2025 -->
+    <title>P2P Cloud Messenger 2025</title>
+    <!-- Firebase Libraries -->
     <script src="www.gstatic.com"></script>
     <script src="www.gstatic.com"></script>
     <style>
         :root { --bg: #0d1117; --green: #238636; --text: #c9d1d9; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .box { width: 90%; max-width: 400px; background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #30363d; text-align: center; }
+        .box { width: 90%; max-width: 400px; background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #30363d; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
         input { width: 100%; background: #0d1117; border: 1px solid #30363d; color: white; padding: 12px; margin: 10px 0; border-radius: 6px; box-sizing: border-box; }
         button { width: 100%; background: var(--green); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
+        button:disabled { background: #1b4721; cursor: not-allowed; }
         .hidden { display: none; }
-        #chat-window { height: 250px; overflow-y: auto; background: #0d1117; border: 1px solid #30363d; padding: 10px; margin: 10px 0; text-align: left; border-radius: 6px; }
+        #chat-window { height: 250px; overflow-y: auto; background: #0d1117; border: 1px solid #30363d; padding: 10px; margin: 10px 0; text-align: left; border-radius: 6px; font-size: 14px; }
         .video-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         video { width: 100%; border-radius: 6px; background: #000; height: 100px; border: 1px solid #444; }
-        .status { font-size: 12px; color: #8b949e; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<!-- Login/Register Screen -->
 <div id="auth-screen" class="box">
-    <h2>🔐 Create or Login ID</h2>
-    <p class="status">Nayi ID banayein ya purani se login karein</p>
-    <input type="text" id="my-id" placeholder="Unique Username (e.g. Rahul777)">
-    <input type="password" id="my-pw" placeholder="Password (Data protect karne ke liye)">
-    <button onclick="handleAuth()">Enter Messenger</button>
+    <h2>🔐 Login / Register</h2>
+    <input type="text" id="my-id" placeholder="Apni Unique ID (e.g. Rahul123)">
+    <input type="password" id="my-pw" placeholder="Password set karein">
+    <button id="login-btn" onclick="handleAuth()">Enter Messenger</button>
+    <p style="font-size: 11px; color: #8b949e; margin-top: 10px;">ID aur Password yaad rakhein data wapas pane ke liye.</p>
 </div>
 
-<!-- Connect Screen -->
 <div id="connect-screen" class="box hidden">
-    <h3>Welcome, <span id="user-display" style="color:var(--green)"></span></h3>
-    <input type="text" id="peer-id" placeholder="Dost ki ID (Username) dalein">
-    <button onclick="startCall()">Connect & Start Video</button>
-    <p class="status">Dost ko apni ID batayein connect karne ke liye</p>
+    <h3>Namaste, <span id="user-display" style="color:var(--green)"></span></h3>
+    <p style="font-size: 13px;">Dost ki ID dalkar connect karein:</p>
+    <input type="text" id="peer-id" placeholder="Dost ka Username">
+    <button onclick="startCall()">Connect & Start Chat</button>
 </div>
 
-<!-- Chat Screen -->
 <div id="chat-screen" class="box hidden" style="max-width: 600px;">
     <div class="video-box">
         <video id="localVideo" autoplay muted playsinline></video>
@@ -51,39 +48,53 @@
 </div>
 
 <script>
-    // Free Public Firebase (Sirf Testing ke liye)
-    const firebaseConfig = { databaseURL: "p2p-secure-chat-2025-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
+    // 2025 Public Signaling Config
+    const firebaseConfig = {
+        databaseURL: "p2p-chat-2025-default-rtdb.firebaseio.com"
+    };
+    
+    try {
+        firebase.initializeApp(firebaseConfig);
+    } catch (e) {
+        console.log("Firebase already initialized");
+    }
+    
     const db = firebase.database();
-
     let myId, peerId, pc, dc, localStream;
     const ice = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
     async function handleAuth() {
         myId = document.getElementById('my-id').value.trim();
         const pw = document.getElementById('my-pw').value;
-        if(!myId || !pw) return alert("Details bhariye!");
+        if(!myId || !pw) return alert("ID aur Password zaruri hai!");
 
-        // Check if user exists in cloud
-        const snapshot = await db.ref('users/' + myId).once('value');
-        if(snapshot.exists()) {
-            if(snapshot.val().pw !== pw) return alert("Wrong Password!");
+        document.getElementById('login-btn').disabled = true;
+        document.getElementById('login-btn').innerText = "Connecting...";
+
+        const userRef = db.ref('users/' + myId);
+        const snap = await userRef.once('value');
+
+        if(snap.exists()) {
+            if(snap.val().pw !== pw) {
+                alert("Wrong Password!");
+                location.reload();
+                return;
+            }
         } else {
-            // New Registration
-            await db.ref('users/' + myId).set({ pw: pw, status: "online" });
+            await userRef.set({ pw: pw, created: Date.now() });
         }
 
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('connect-screen').classList.remove('hidden');
         document.getElementById('user-display').innerText = myId;
-        listenForCalls();
+        listenForSignals();
     }
 
-    function listenForCalls() {
+    function listenForSignals() {
         db.ref('signals/' + myId).on('value', async snap => {
             const data = snap.val();
-            if(data && data.type === "offer") {
-                if(confirm(data.from + " connect karna chahte hain?")) {
+            if(data && data.type === "offer" && !pc) {
+                if(confirm(data.from + " is calling. Accept?")) {
                     peerId = data.from;
                     await acceptCall(data.sdp);
                 }
@@ -93,7 +104,7 @@
 
     async function startCall() {
         peerId = document.getElementById('peer-id').value.trim();
-        if(!peerId) return alert("Dost ki ID likhein!");
+        if(!peerId || peerId === myId) return alert("Valid Peer ID dalein!");
 
         localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
         document.getElementById('localVideo').srcObject = localStream;
@@ -106,7 +117,7 @@
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
 
-        db.ref('signals/' + peerId).set({ type: "offer", from: myId, sdp: JSON.stringify(offer) });
+        await db.ref('signals/' + peerId).set({ type: "offer", from: myId, sdp: JSON.stringify(offer) });
 
         db.ref('signals/' + myId).on('value', async snap => {
             const data = snap.val();
@@ -129,7 +140,7 @@
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
 
-        db.ref('signals/' + peerId).set({ type: "answer", from: myId, sdp: JSON.stringify(answer) });
+        await db.ref('signals/' + peerId).set({ type: "answer", from: myId, sdp: JSON.stringify(answer) });
         showChat();
     }
 
@@ -145,6 +156,7 @@
 
     function sendMsg() {
         const i = document.getElementById('msg-input');
+        if(!i.value) return;
         dc.send(i.value);
         appendMsg("Me", i.value);
         i.value = "";
@@ -158,3 +170,4 @@
 </script>
 </body>
 </html>
+
