@@ -3,211 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro P2P Messenger 2025</title>
-    <!-- Fast Library Load -->
+    <title>Secure P2P Messenger 2025</title>
+    <!-- PeerJS for Global Connectivity -->
     <script src="cdn.jsdelivr.net"></script>
     <style>
         :root { --bg: #0b141a; --sidebar: #111b21; --header: #202c33; --accent: #00a884; --text: #e9edef; --msg-me: #005c4b; --msg-peer: #202c33; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Auth System (Register/Login) */
-        #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: var(--sidebar); padding: 30px; border-radius: 12px; width: 320px; text-align: center; border: 1px solid #333; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
-        .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #333; }
-        .tab { flex: 1; padding: 10px; cursor: pointer; opacity: 0.5; transition: 0.3s; }
-        .tab.active { opacity: 1; border-bottom: 3px solid var(--accent); color: var(--accent); font-weight: bold; }
 
-        /* Main Layout */
-        .sidebar { width: 30%; min-width: 300px; border-right: 1px solid #333; background: var(--sidebar); display: flex; flex-direction: column; }
+        /* Step 1: Login Screen Styles */
+        #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: var(--sidebar); padding: 30px; border-radius: 12px; width: 320px; text-align: center; border: 1px solid #333; }
+        .tab-btn { padding: 10px; cursor: pointer; opacity: 0.5; flex: 1; border-bottom: 2px solid transparent; }
+        .tab-btn.active { opacity: 1; border-bottom-color: var(--accent); color: var(--accent); }
+
+        /* Step 2: Main Sidebar Styles */
+        .sidebar { width: 30%; min-width: 300px; border-right: 1px solid #333; background: var(--sidebar); display: flex; flex-direction: column; position: relative; }
         .sidebar-header { background: var(--header); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
         .chat-list { flex: 1; overflow-y: auto; }
         .chat-item { padding: 15px; display: flex; align-items: center; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; }
         .chat-item:hover { background: #2a3942; }
-        .avatar { width: 45px; height: 45px; border-radius: 50%; background: #555; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; color: white; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; background: #444; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; }
 
+        /* Main Chat Styles */
         .main-chat { flex: 1; display: flex; flex-direction: column; background: #0b141a url('user-images.githubusercontent.com'); background-blend-mode: overlay; }
-        .chat-header { background: var(--header); padding: 10px 20px; display: flex; align-items: center; border-bottom: 1px solid #333; }
         .messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        .msg { max-width: 65%; padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; font-size: 14px; color: white; }
+        .msg { max-width: 65%; padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; font-size: 14px; }
         .msg.me { align-self: flex-end; background: var(--msg-me); }
         .msg.peer { align-self: flex-start; background: var(--msg-peer); }
 
-        /* Controls */
-        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #2a3942; border: none; color: white; border-radius: 8px; box-sizing: border-box; }
-        button { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
-        button:hover { opacity: 0.9; transform: scale(1.01); }
-        .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; }
-        
-        .hidden { display: none; }
+        /* Floating Plus Button */
+        .fab { position: absolute; bottom: 30px; right: 25px; width: 55px; height: 55px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; color: white; }
+
+        /* Modal for Adding Friends */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #2a3942; border: none; color: white; border-radius: 8px; box-sizing: border-box; }
+        button { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<!-- Step 1: Login & Register UI -->
+<!-- Step 1: Login/Register Overlay -->
 <div id="auth-overlay">
     <div class="auth-card">
         <h2 style="color:var(--accent)">🔐 Messenger 2025</h2>
-        <div class="auth-tabs">
-            <div id="tab-l" class="tab active" onclick="switchAuth('login')">Login</div>
-            <div id="tab-r" class="tab" onclick="switchAuth('register')">Register</div>
+        <div style="display:flex; margin-bottom:20px;">
+            <div id="l-tab" class="tab-btn active" onclick="setMode('login')">Login</div>
+            <div id="r-tab" class="tab-btn" onclick="setMode('register')">Register</div>
         </div>
-        <input type="text" id="auth-user" placeholder="Username / ID">
+        <input type="text" id="auth-user" placeholder="Username (ID)">
         <input type="password" id="auth-pass" placeholder="Password">
-        <button id="auth-btn" onclick="performAuth()">Enter Chat</button>
-        <p id="auth-status" style="font-size: 12px; margin-top: 10px; color: #888;">Unique ID se login karein</p>
+        <button onclick="auth()" id="auth-btn">Enter Chat</button>
     </div>
 </div>
 
-<!-- Step 2: WhatsApp Interface -->
-<div class="sidebar">
+<!-- Step 2: Main Chat Interface (Hidden by Default) -->
+<div class="sidebar hidden" id="main-sidebar">
     <div class="sidebar-header">
-        <div id="my-icon" class="avatar" style="background:var(--accent)">U</div>
-        <div style="font-size: 12px; color: var(--accent)">● Online</div>
+        <div id="my-pic" class="avatar" style="background:var(--accent)">U</div>
+        <div style="font-size: 12px; color: var(--accent)">● Active</div>
     </div>
-    <div class="chat-list" id="sidebar-list"></div>
-    <div class="fab" onclick="showAddFriend()">+</div>
+    <div class="chat-list" id="chat-list"></div>
+    <!-- Floating (+) Button -->
+    <div class="fab" onclick="showModal()">+</div>
 </div>
 
-<div class="main-chat" id="welcome-view">
+<div class="main-chat hidden" id="main-view">
     <div style="margin: auto; text-align: center; opacity: 0.3;">
-        <img src="cdn-icons-png.flaticon.com" width="100"><br>
-        <h3>Private P2P Messaging</h3>
-        <p>Chat shuru karne ke liye dost ko add karein.</p>
+        <img src="cdn-icons-png.flaticon.com" width="100">
+        <h3>End-to-End Encrypted</h3>
+        <p>(+) icon se dost add karein.</p>
     </div>
 </div>
 
-<div class="main-chat hidden" id="active-chat-view">
-    <div class="chat-header">
-        <div id="peer-icon" class="avatar" style="width:35px; height:35px; font-size:14px;">P</div>
-        <b id="peer-name-title">Dost</b>
+<!-- Chat Window -->
+<div class="main-chat hidden" id="chat-window">
+    <div class="sidebar-header">
+        <div id="peer-pic" class="avatar" style="width:35px; height:35px; font-size:14px;">P</div>
+        <b id="peer-name">Dost</b>
     </div>
-    <div class="messages" id="chat-msgs"></div>
-    <div style="background:var(--header); padding:10px 20px; display:flex; align-items:center;">
-        <input type="text" id="msg-input" placeholder="Type a message..." style="margin:0; flex:1;">
-        <button onclick="send()" style="width:auto; margin-left:10px; padding:10px 20px;">Send</button>
+    <div class="messages" id="msgs-box"></div>
+    <div style="background:var(--header); padding:10px; display:flex;">
+        <input type="text" id="m-input" placeholder="Type message..." style="margin:0; flex:1;">
+        <button onclick="send()" style="width:auto; margin-left:10px; padding:0 20px;">Send</button>
     </div>
 </div>
 
-<!-- Add Friend Modal -->
+<!-- Step 3: Add Friend Modal (Only opens on FAB click) -->
 <div id="add-modal" class="modal hidden">
     <div class="auth-card">
-        <h3>Add Contact</h3>
-        <input type="text" id="target-id" placeholder="Dost ka Username">
-        <input type="text" id="verify-code" placeholder="Verification Token (6 Digit)">
-        <button onclick="addNewFriend()">Connect & Verify</button>
-        <button onclick="hideAddFriend()" style="background:#444; margin-top:5px;">Cancel</button>
+        <h3>Add Friend</h3>
+        <input type="text" id="target-id" placeholder="Dost ka ID">
+        <input type="text" id="otp-code" placeholder="Verification Token (6 Digit)">
+        <button onclick="connectPeer()">Verify & Connect</button>
+        <button onclick="hideModal()" style="background:#444; margin-top:5px;">Cancel</button>
     </div>
 </div>
 
 <script>
-    let authMode = 'login';
-    let myId, peerObj, activeConn;
-    let friendList = JSON.parse(localStorage.getItem('my_friends_2025') || "[]");
+    let mode = 'login', myPeer, myId, conn;
+    let friends = JSON.parse(localStorage.getItem('f_list_final') || "[]");
 
-    function switchAuth(m) {
-        authMode = m;
-        document.getElementById('tab-l').className = m === 'login' ? 'tab active' : 'tab';
-        document.getElementById('tab-r').className = m === 'register' ? 'tab active' : 'tab';
-        document.getElementById('auth-btn').innerText = m === 'login' ? 'Login' : 'Create Account';
+    function setMode(m) {
+        mode = m;
+        document.getElementById('l-tab').className = m === 'login' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('r-tab').className = m === 'register' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('auth-btn').innerText = m === 'login' ? 'Login Now' : 'Create Account';
     }
 
-    function performAuth() {
+    function auth() {
         const u = document.getElementById('auth-user').value.trim();
         const p = document.getElementById('auth-pass').value;
         if(!u || !p) return alert("Sari details bhariye!");
 
-        if(authMode === 'register') {
-            if(localStorage.getItem("pw_"+u)) return alert("ID pehle se hai!");
-            localStorage.setItem("pw_"+u, p);
+        if(mode === 'register') {
+            localStorage.setItem("pass_"+u, p);
             alert("Registration Safal! Ab Login karein.");
-            switchAuth('login');
+            setMode('login');
         } else {
-            if(localStorage.getItem("pw_"+u) === p) {
+            if(localStorage.getItem("pass_"+u) === p) {
                 myId = u;
-                startMessenger();
-            } else { alert("Galat ID ya Password!"); }
+                startApp();
+            } else { alert("Galat Password!"); }
         }
     }
 
-    function startMessenger() {
-        peerObj = new Peer(myId);
-        peerObj.on('open', (id) => {
+    function startApp() {
+        myPeer = new Peer(myId);
+        myPeer.on('open', (id) => {
             document.getElementById('auth-overlay').classList.add('hidden');
-            document.getElementById('my-icon').innerText = myId.charAt(0).toUpperCase();
+            document.getElementById('main-sidebar').classList.remove('hidden');
+            document.getElementById('main-view').classList.remove('hidden');
+            document.getElementById('my-pic').innerText = myId.charAt(0).toUpperCase();
             updateSidebar();
         });
 
-        peerObj.on('connection', (conn) => {
-            activeConn = conn;
-            setupConn();
-            if(!friendList.includes(conn.peer)) {
-                friendList.push(conn.peer);
-                localStorage.setItem('my_friends_2025', JSON.stringify(friendList));
-                updateSidebar();
-            }
-            openChatWindow(conn.peer);
+        myPeer.on('connection', (c) => {
+            conn = c;
+            conn.on('data', d => appendMsg('peer', d));
+            saveFriend(c.peer);
+            openChat(c.peer);
         });
     }
 
-    function showAddFriend() { document.getElementById('add-modal').classList.remove('hidden'); }
-    function hideAddFriend() { document.getElementById('add-modal').classList.add('hidden'); }
+    function showModal() { document.getElementById('add-modal').classList.remove('hidden'); }
+    function hideModal() { document.getElementById('add-modal').classList.add('hidden'); }
 
-    function addNewFriend() {
+    function connectPeer() {
         const tid = document.getElementById('target-id').value.trim();
         if(!tid || tid === myId) return alert("Sahi ID dalein!");
-        
-        activeConn = peerObj.connect(tid);
-        activeConn.on('open', () => {
-            if(!friendList.includes(tid)) {
-                friendList.push(tid);
-                localStorage.setItem('my_friends_2025', JSON.stringify(friendList));
-                updateSidebar();
-            }
-            openChatWindow(tid);
-            hideAddFriend();
+
+        conn = myPeer.connect(tid);
+        conn.on('open', () => {
+            saveFriend(tid);
+            openChat(tid);
+            hideModal();
         });
-        setupConn();
+        conn.on('data', d => appendMsg('peer', d));
     }
 
-    function setupConn() {
-        activeConn.on('data', data => appendMessage('peer', data));
+    function saveFriend(id) {
+        if(!friends.includes(id)) {
+            friends.push(id);
+            localStorage.setItem('f_list_final', JSON.stringify(friends));
+            updateSidebar();
+        }
     }
 
     function updateSidebar() {
-        const container = document.getElementById('sidebar-list');
-        container.innerHTML = "";
-        friendList.forEach(f => {
+        const cont = document.getElementById('chat-list');
+        cont.innerHTML = "";
+        friends.forEach(f => {
             const div = document.createElement('div');
             div.className = 'chat-item';
-            div.innerHTML = `<div class="avatar">${f.charAt(0).toUpperCase()}</div> <div><b>${f}</b><br><small style="color:#888">Click to chat</small></div>`;
-            div.onclick = () => { activeConn = peerObj.connect(f); openChatWindow(f); setupConn(); };
-            container.appendChild(div);
+            div.innerHTML = `<div class="avatar">${f.charAt(0).toUpperCase()}</div> <div><b>${f}</b><br><small style="color:#888">Online</small></div>`;
+            div.onclick = () => { conn = myPeer.connect(f); openChat(f); };
+            cont.appendChild(div);
         });
     }
 
-    function openChatWindow(name) {
-        document.getElementById('welcome-view').classList.add('hidden');
-        document.getElementById('active-chat-view').classList.remove('hidden');
-        document.getElementById('peer-name-title').innerText = name;
-        document.getElementById('peer-icon').innerText = name.charAt(0).toUpperCase();
-        document.getElementById('chat-msgs').innerHTML = "";
+    function openChat(name) {
+        document.getElementById('main-view').classList.add('hidden');
+        document.getElementById('chat-window').classList.remove('hidden');
+        document.getElementById('peer-name').innerText = name;
+        document.getElementById('peer-pic').innerText = name.charAt(0).toUpperCase();
+        document.getElementById('msgs-box').innerHTML = "";
     }
 
     function send() {
-        const val = document.getElementById('msg-input').value;
-        if(!val || !activeConn) return;
-        activeConn.send(val);
-        appendMessage('me', val);
-        document.getElementById('msg-input').value = "";
+        const val = document.getElementById('m-input').value;
+        if(!val || !conn) return;
+        conn.send(val);
+        appendMsg('me', val);
+        document.getElementById('m-input').value = "";
     }
 
-    function appendMessage(type, text) {
+    function appendMsg(type, text) {
         const div = document.createElement('div');
         div.className = `msg ${type}`;
         div.innerText = text;
-        document.getElementById('chat-msgs').appendChild(div);
-        document.getElementById('chat-msgs').scrollTop = document.getElementById('chat-msgs').scrollHeight;
+        document.getElementById('msgs-box').appendChild(div);
+        document.getElementById('msgs-box').scrollTop = document.getElementById('msgs-box').scrollHeight;
     }
 </script>
 </body>
