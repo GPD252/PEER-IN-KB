@@ -3,95 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E2EE ID-Persistent Chat</title>
+    <title>Ultimate E2EE P2P Messenger 2025</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0b0e11; color: #e9edef; padding: 20px; }
-        .box { max-width: 500px; margin: auto; border: 1px solid #333; padding: 20px; border-radius: 12px; background: #111b21; }
-        input, textarea { width: 100%; background: #2a3942; border: none; color: white; padding: 10px; margin: 10px 0; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; background: #00a884; color: white; border: none; padding: 12px; cursor: pointer; border-radius: 5px; font-weight: bold; }
-        #chat-window { height: 300px; overflow-y: auto; background: #0b141a; border: 1px solid #222; padding: 10px; margin-top: 10px; }
+        :root { --bg: #0b0e11; --panel: #111b21; --accent: #00a884; --text: #e9edef; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        .box { width: 90%; max-width: 600px; border: 1px solid #333; padding: 20px; border-radius: 12px; background: var(--panel); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        input, textarea { width: 100%; background: #2a3942; border: 1px solid #333; color: white; padding: 12px; margin: 8px 0; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; background: var(--accent); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.3s; margin-top: 5px; }
+        button:hover { opacity: 0.8; }
+        #chat-window { height: 250px; overflow-y: auto; background: #0b141a; border: 1px solid #222; padding: 10px; margin: 10px 0; border-radius: 8px; }
+        .video-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        video { width: 100%; border-radius: 8px; background: #000; border: 1px solid #444; }
         .hidden { display: none; }
-        .id-badge { background: #202c33; padding: 5px; color: #00a884; font-family: monospace; }
+        .id-badge { background: #202c33; padding: 4px 8px; color: var(--accent); font-family: monospace; border-radius: 4px; }
     </style>
 </head>
 <body>
 
 <div id="login-screen" class="box">
-    <h2>🔐 Login with ID</h2>
-    <p>Apni Unique ID dalein ya Nayi banayein:</p>
-    <input type="text" id="user-id-input" placeholder="Purani ID yahan dalein...">
-    <button onclick="login()">Enter Chat</button>
-    <p style="font-size: 0.8em; color: #8696a0;">ID login karne par aapka purana data (Chat History) wapas aa jayega.</p>
+    <h2>🔐 Secure ID Login</h2>
+    <p>Apni Unique ID dalein (Isi se Chat History wapas aayegi):</p>
+    <input type="text" id="user-id-input" placeholder="Example: my-private-key-123">
+    <button onclick="login()">Enter Secure Space</button>
 </div>
 
 <div id="main-screen" class="box hidden">
-    <h3>Aapki ID: <span id="display-id" class="id-badge"></span></h3>
+    <h3>ID: <span id="display-id" class="id-badge"></span></h3>
     
     <div id="connection-setup">
-        <p>Handshake Code (Sirf 1KB internet chahiye):</p>
-        <button onclick="createOffer()">Generate My Code</button>
-        <textarea id="my-code" readonly placeholder="Aapka code..."></textarea>
+        <p style="font-size: 0.9em; color: #8696a0;">Handshake (Exchange 1KB code to start):</p>
+        <button onclick="startSession()" id="gen-btn">Step 1: Generate My Code</button>
+        <textarea id="my-code" readonly placeholder="Aapka Handshake Code..."></textarea>
         <textarea id="peer-code" placeholder="Dost ka code yahan paste karein..."></textarea>
-        <button onclick="connectToPeer()">Connect to Partner</button>
+        <button onclick="connectToPeer()" style="background: #34b7f1;">Step 2: Connect & Start</button>
     </div>
 
     <div id="chat-area" class="hidden">
+        <div class="video-container">
+            <video id="localVideo" autoplay muted playsinline></video>
+            <video id="remoteVideo" autoplay playsinline></video>
+        </div>
         <div id="chat-window"></div>
-        <input type="text" id="msg-input" placeholder="Message...">
+        <input type="text" id="msg-input" placeholder="Type message...">
         <button onclick="sendMessage()">Bhejein</button>
     </div>
 </div>
 
 <script>
-    let pc;
-    let dataChannel;
-    let currentID = "";
+    let pc, dataChannel, localStream, currentID = "";
+    const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
-    // 1. Login aur History Restore Function
-    function login() {
+    async function login() {
         const input = document.getElementById('user-id-input').value;
-        currentID = input || "User-" + Math.floor(Math.random() * 100000);
-        
+        if(!input) return alert("ID dalna zaruri hai!");
+        currentID = input;
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('main-screen').classList.remove('hidden');
         document.getElementById('display-id').innerText = currentID;
-
-        // Purani chats load karein
         loadHistory();
     }
 
-    // 2. WebRTC Connection Setup
-    const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+    async function startSession() {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = localStream;
+            initPeer(true);
+        } catch (e) { alert("Camera access chahiye!"); }
+    }
 
-    async function createOffer() {
+    function initPeer(isOffer) {
         pc = new RTCPeerConnection(config);
-        dataChannel = pc.createDataChannel("chat");
-        setupDataChannel();
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
+        pc.ontrack = (e) => { document.getElementById('remoteVideo').srcObject = e.streams[0]; };
+        
+        if(isOffer) {
+            dataChannel = pc.createDataChannel("chat");
+            setupDataChannel();
+            pc.createOffer().then(d => pc.setLocalDescription(d));
+        } else {
+            pc.ondatachannel = (e) => { dataChannel = e.channel; setupDataChannel(); };
+        }
 
         pc.onicecandidate = (e) => {
-            if (!e.candidate) {
-                document.getElementById('my-code').value = btoa(JSON.stringify(pc.localDescription));
-            }
+            if (!e.candidate) document.getElementById('my-code').value = btoa(JSON.stringify(pc.localDescription));
         };
     }
 
     async function connectToPeer() {
-        const peerCode = JSON.parse(atob(document.getElementById('peer-code').value));
-        if (!pc) {
-            pc = new RTCPeerConnection(config);
-            pc.ondatachannel = (e) => {
-                dataChannel = e.channel;
-                setupDataChannel();
-            };
-        }
-        await pc.setRemoteDescription(new RTCSessionDescription(peerCode));
-        if (peerCode.type === "offer") {
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            document.getElementById('my-code').value = btoa(JSON.stringify(pc.localDescription));
+        const val = document.getElementById('peer-code').value;
+        if(!val) return;
+        const peerDesc = JSON.parse(atob(val));
+        if(!pc) initPeer(false);
+        await pc.setRemoteDescription(new RTCSessionDescription(peerDesc));
+        if (peerDesc.type === "offer") {
+            const ans = await pc.createAnswer();
+            await pc.setLocalDescription(ans);
         }
     }
 
@@ -103,33 +110,31 @@
         dataChannel.onmessage = (e) => saveChat("Partner", e.data);
     }
 
-    // 3. Data Storage (ID based)
     function saveChat(sender, text) {
-        const historyKey = "chat_history_" + currentID;
-        let history = JSON.parse(localStorage.getItem(historyKey) || "[]");
-        history.push({ sender, text, time: new Date().toLocaleTimeString() });
-        localStorage.setItem(historyKey, JSON.stringify(history));
+        const key = "h_" + currentID;
+        let h = JSON.parse(localStorage.getItem(key) || "[]");
+        h.push({ sender, text, t: new Date().toLocaleTimeString() });
+        localStorage.setItem(key, JSON.stringify(h));
         displayMsg(sender, text);
     }
 
     function loadHistory() {
-        const historyKey = "chat_history_" + currentID;
-        let history = JSON.parse(localStorage.getItem(historyKey) || "[]");
-        history.forEach(m => displayMsg(m.sender, m.text));
+        const h = JSON.parse(localStorage.getItem("h_" + currentID) || "[]");
+        h.forEach(m => displayMsg(m.sender, m.text));
     }
 
-    function displayMsg(sender, text) {
-        const win = document.getElementById('chat-window');
-        win.innerHTML += `<div><b>${sender}:</b> ${text}</div>`;
-        win.scrollTop = win.scrollHeight;
+    function displayMsg(s, t) {
+        const w = document.getElementById('chat-window');
+        w.innerHTML += `<div><small>${s}:</small> ${t}</div>`;
+        w.scrollTop = w.scrollHeight;
     }
 
     function sendMessage() {
-        const input = document.getElementById('msg-input');
+        const i = document.getElementById('msg-input');
         if (dataChannel && dataChannel.readyState === "open") {
-            dataChannel.send(input.value);
-            saveChat("Me", input.value);
-            input.value = "";
+            dataChannel.send(i.value);
+            saveChat("Me", i.value);
+            i.value = "";
         }
     }
 </script>
