@@ -3,186 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P2P Pro Messenger 2025</title>
-    <!-- Firebase SDK -->
+    <title>Global Private Messenger 2025</title>
+    <!-- Firebase SDK (Authoritative Source for 2025) -->
     <script src="www.gstatic.com"></script>
     <script src="www.gstatic.com"></script>
     <style>
-        :root { --bg: #0d1117; --green: #238636; --blue: #1f6feb; --text: #c9d1d9; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .box { width: 90%; max-width: 400px; background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #30363d; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input { width: 100%; background: #0d1117; border: 1px solid #30363d; color: white; padding: 12px; margin: 10px 0; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        button { flex: 1; padding: 12px; cursor: pointer; border-radius: 6px; font-weight: bold; border: none; color: white; transition: 0.2s; }
-        .login-btn { background: var(--green); }
-        .reg-btn { background: var(--blue); }
-        button:hover { opacity: 0.8; transform: translateY(-2px); }
-        button:active { transform: translateY(0); }
+        :root { --bg: #0d1117; --card: #161b22; --btn-green: #238636; --btn-blue: #1f6feb; --text: #c9d1d9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 95%; max-width: 420px; background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #30363d; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+        h2 { text-align: center; margin-bottom: 20px; color: #58a6ff; }
+        .tab-group { display: flex; margin-bottom: 20px; border-bottom: 1px solid #333; }
+        .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; opacity: 0.6; transition: 0.3s; }
+        .tab.active { border-bottom: 3px solid var(--btn-blue); opacity: 1; font-weight: bold; }
+        input { width: 100%; background: #0d1117; border: 1px solid #30363d; color: white; padding: 14px; margin-bottom: 15px; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 16px; }
+        input:focus { border-color: var(--btn-blue); box-shadow: 0 0 5px rgba(31, 111, 235, 0.5); }
+        button { width: 100%; padding: 14px; border-radius: 8px; border: none; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; position: relative; }
+        #auth-btn { background: var(--btn-green); }
+        #auth-btn:hover { background: #2ea043; transform: translateY(-2px); }
+        #auth-btn:active { transform: translateY(0); }
         .hidden { display: none; }
-        #chat-window { height: 250px; overflow-y: auto; background: #0d1117; border: 1px solid #30363d; padding: 10px; margin: 10px 0; text-align: left; border-radius: 6px; border-left: 4px solid var(--green); }
-        .video-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        video { width: 100%; border-radius: 6px; background: #000; height: 110px; border: 1px solid #444; }
-        #status-msg { font-size: 12px; color: #f0ad4e; margin-bottom: 10px; }
+        #status-bar { font-size: 12px; text-align: center; margin-bottom: 15px; color: #8b949e; }
+        #chat-box { height: 300px; overflow-y: auto; background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 10px; margin-bottom: 15px; display: flex; flex-direction: column; }
+        .video-feed { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        video { width: 100%; height: 120px; background: #000; border-radius: 8px; border: 1px solid #444; object-fit: cover; }
     </style>
 </head>
 <body>
 
-<!-- Step 1: Authentication Screen -->
-<div id="auth-screen" class="box">
-    <h2>🔐 Secure Access</h2>
-    <div id="status-msg">Database se connect ho raha hai...</div>
-    <input type="text" id="my-id" placeholder="Unique Username (ID)">
-    <input type="password" id="my-pw" placeholder="Password">
-    <div class="btn-group">
-        <button class="reg-btn" onclick="handleAuth('register')">Register</button>
-        <button class="login-btn" onclick="handleAuth('login')">Login</button>
+<div class="container" id="main-container">
+    <div id="status-bar">System initializing...</div>
+    
+    <!-- AUTHENTICATION SECTION -->
+    <div id="auth-section">
+        <h2>🔐 Private Chat</h2>
+        <div class="tab-group">
+            <div id="login-tab" class="tab active" onclick="switchTab('login')">Login</div>
+            <div id="register-tab" class="tab" onclick="switchTab('register')">Register</div>
+        </div>
+        <input type="text" id="username" placeholder="Username (Unique ID)">
+        <input type="password" id="password" placeholder="Password">
+        <button id="auth-btn" onclick="processAuth()">Enter Messenger</button>
     </div>
-</div>
 
-<!-- Step 2: Connection Screen -->
-<div id="connect-screen" class="box hidden">
-    <h3>Namaste, <span id="user-display" style="color:var(--green)"></span></h3>
-    <p>Dost ka Username dalein:</p>
-    <input type="text" id="peer-id" placeholder="Dost ki ID">
-    <button style="background: var(--blue); width: 100%;" onclick="startCall()">Connect Now</button>
-</div>
-
-<!-- Step 3: Chat/Video Screen -->
-<div id="chat-screen" class="box hidden" style="max-width: 600px;">
-    <div class="video-box">
-        <video id="localVideo" autoplay muted playsinline></video>
-        <video id="remoteVideo" autoplay playsinline></video>
+    <!-- CONNECTION SECTION -->
+    <div id="connect-section" class="hidden">
+        <h2>👋 Welcome, <span id="user-tag" style="color:#58a6ff;"></span></h2>
+        <p style="text-align:center; font-size:14px; color:#8b949e;">Dost ka Username dalkar video call start karein:</p>
+        <input type="text" id="peer-id" placeholder="Partner's Username">
+        <button id="call-btn" onclick="initiateConnection()" style="background:var(--btn-blue);">Start High-Quality Call</button>
     </div>
-    <div id="chat-window"></div>
-    <div style="display: flex; gap: 5px;">
-        <input type="text" id="msg-input" placeholder="Message..." style="margin: 0;">
-        <button onclick="sendMsg()" style="flex: 0; padding: 0 20px; background: var(--green);">Bhejein</button>
+
+    <!-- CHAT SECTION -->
+    <div id="chat-section" class="hidden">
+        <div class="video-feed">
+            <video id="my-video" autoplay muted playsinline></video>
+            <video id="peer-video" autoplay playsinline></video>
+        </div>
+        <div id="chat-box"></div>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="msg-input" placeholder="Type message..." style="margin-bottom:0;">
+            <button onclick="sendMsg()" style="width:80px; background:var(--btn-green); padding:0;">Send</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // Firebase Setup for 2025 Direct Messaging
-    const firebaseConfig = { databaseURL: "p2p-direct-2025-default-rtdb.firebaseio.com" };
-    
-    // Initialize Firebase
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
+    // 2025 Secure Database Config
+    const firebaseConfig = { databaseURL: "p2p-live-2025-default-rtdb.firebaseio.com" };
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
-    
-    // Check connection
+
+    let currentMode = 'login';
+    let myID, peerID, pc, dc, stream;
+    const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+    // Update Status
     db.ref(".info/connected").on("value", (snap) => {
-        const msg = document.getElementById('status-msg');
-        if (snap.val() === true) { msg.innerText = "Online - Ready to Chat"; msg.style.color = "#238636"; }
-        else { msg.innerText = "Offline - Connecting..."; msg.style.color = "#da3633"; }
+        document.getElementById('status-bar').innerText = snap.val() ? "🟢 Online - Secure Connection" : "🔴 Offline - Reconnecting...";
     });
 
-    let myId, peerId, pc, dc, localStream;
-    const ice = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+    function switchTab(mode) {
+        currentMode = mode;
+        document.getElementById('login-tab').className = mode === 'login' ? 'tab active' : 'tab';
+        document.getElementById('register-tab').className = mode === 'register' ? 'tab active' : 'tab';
+        document.getElementById('auth-btn').innerText = mode === 'login' ? 'Login Now' : 'Create Account';
+    }
 
-    async function handleAuth(type) {
-        myId = document.getElementById('my-id').value.trim();
-        const pw = document.getElementById('my-pw').value;
-        if(!myId || !pw) return alert("Kripya ID aur Password bhariye!");
+    async function processAuth() {
+        const u = document.getElementById('username').value.trim();
+        const p = document.getElementById('password').value;
+        if (!u || !p) return alert("Sari fields bhariye!");
 
-        const userRef = db.ref('users/' + myId);
-        const snap = await userRef.once('value');
+        const ref = db.ref('users/' + u);
+        const snap = await ref.once('value');
 
-        if(type === 'register') {
-            if(snap.exists()) return alert("ID pehle se maujood hai! Login karein.");
-            await userRef.set({ pw: pw, joined: Date.now() });
-            alert("Registration Safal! Ab Login karein.");
+        if (currentMode === 'register') {
+            if (snap.exists()) return alert("Username pehle se hai! Login karein.");
+            await ref.set({ pw: p, status: 'online' });
+            alert("Success! Ab Login karein.");
+            switchTab('login');
         } else {
-            if(!snap.exists() || snap.val().pw !== pw) return alert("Galat ID ya Password!");
-            enterApp();
+            if (!snap.exists() || snap.val().pw !== p) return alert("Galat ID ya Password!");
+            myID = u;
+            showConnectScreen();
         }
     }
 
-    function enterApp() {
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('connect-screen').classList.remove('hidden');
-        document.getElementById('user-display').innerText = myId;
-        listenForSignals();
-    }
-
-    function listenForSignals() {
-        db.ref('signals/' + myId).on('value', async snap => {
-            const data = snap.val();
-            if(data && data.type === "offer") {
-                if(confirm(data.from + " connect hona chahte hain?")) {
-                    peerId = data.from;
-                    await acceptCall(data.sdp);
-                    db.ref('signals/' + myId).remove(); // Cleanup
+    function showConnectScreen() {
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('connect-section').classList.remove('hidden');
+        document.getElementById('user-tag').innerText = myID;
+        // Listen for Incoming
+        db.ref('signals/' + myID).on('value', async s => {
+            const d = s.val();
+            if (d && d.type === 'offer') {
+                if (confirm(d.from + " wants to call. Accept?")) {
+                    peerID = d.from;
+                    await handleAccept(d.sdp);
                 }
             }
         });
     }
 
-    async function startCall() {
-        peerId = document.getElementById('peer-id').value.trim();
-        if(!peerId || peerId === myId) return alert("Valid ID dalein!");
-
-        localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-        document.getElementById('localVideo').srcObject = localStream;
-
-        pc = new RTCPeerConnection(ice);
-        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+    async function initiateConnection() {
+        peerID = document.getElementById('peer-id').value.trim();
+        if (!peerID || peerID === myID) return alert("Sahi Username dalein!");
+        
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('my-video').srcObject = stream;
+        
+        pc = new RTCPeerConnection(rtcConfig);
+        stream.getTracks().forEach(t => pc.addTrack(t, stream));
         dc = pc.createDataChannel("chat");
         setupDC();
 
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
+        await db.ref('signals/' + peerID).set({ type: 'offer', from: myID, sdp: JSON.stringify(offer) });
 
-        await db.ref('signals/' + peerId).set({ type: "offer", from: myId, sdp: JSON.stringify(offer) });
-
-        db.ref('signals/' + myId).on('value', async snap => {
-            const data = snap.val();
-            if(data && data.type === "answer") {
-                await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(data.sdp)));
+        db.ref('signals/' + myID).on('value', async s => {
+            if (s.val() && s.val().type === 'answer') {
+                await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(s.val().sdp)));
                 showChat();
-                db.ref('signals/' + myId).remove();
             }
         });
     }
 
-    async function acceptCall(sdp) {
-        localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-        document.getElementById('localVideo').srcObject = localStream;
-
-        pc = new RTCPeerConnection(ice);
-        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+    async function handleAccept(sdp) {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('my-video').srcObject = stream;
+        pc = new RTCPeerConnection(rtcConfig);
+        stream.getTracks().forEach(t => pc.addTrack(t, stream));
         pc.ondatachannel = e => { dc = e.channel; setupDC(); };
-
         await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(sdp)));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-
-        await db.ref('signals/' + peerId).set({ type: "answer", from: myId, sdp: JSON.stringify(answer) });
+        const ans = await pc.createAnswer();
+        await pc.setLocalDescription(ans);
+        await db.ref('signals/' + peerID).set({ type: 'answer', from: myID, sdp: JSON.stringify(ans) });
         showChat();
     }
 
     function setupDC() {
         dc.onopen = () => showChat();
-        dc.onmessage = e => appendMsg("Dost", e.data);
+        dc.onmessage = e => appendMsg("Partner", e.data);
     }
 
     function showChat() {
-        document.getElementById('connect-screen').classList.add('hidden');
-        document.getElementById('chat-screen').classList.remove('hidden');
+        document.getElementById('connect-section').classList.add('hidden');
+        document.getElementById('chat-section').classList.remove('hidden');
     }
 
     function sendMsg() {
         const i = document.getElementById('msg-input');
-        if(!i.value) return;
+        if (!i.value) return;
         dc.send(i.value);
-        appendMsg("Main", i.value);
+        appendMsg("Me", i.value);
         i.value = "";
     }
 
     function appendMsg(s, t) {
-        const win = document.getElementById('chat-window');
-        win.innerHTML += `<div><b>${s}:</b> ${t}</div>`;
-        win.scrollTop = win.scrollHeight;
+        const b = document.getElementById('chat-box');
+        b.innerHTML += `<div><b>${s}:</b> ${t}</div>`;
+        b.scrollTop = b.scrollHeight;
     }
 </script>
 </body>
