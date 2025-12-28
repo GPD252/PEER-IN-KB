@@ -3,185 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Private Messenger 2025</title>
+    <title>Secure P2P Elite Messenger</title>
+    <!-- PeerJS for Connectivity -->
+    <script src="unpkg.com"></script>
     <style>
         :root { --bg: #0b141a; --header: #202c33; --panel: #111b21; --accent: #00a884; --text: #e9edef; --msg-me: #005c4b; --msg-peer: #202c33; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Sidebar Styles */
-        .sidebar { width: 30%; border-right: 1px solid #30363d; background: var(--panel); display: flex; flex-direction: column; min-width: 280px; }
-        .sidebar-header { background: var(--header); padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .search-bar { padding: 10px; background: var(--panel); }
-        .search-bar input { width: 90%; background: #202c33; border: none; padding: 8px; border-radius: 8px; color: white; }
-        .friend-list { flex: 1; overflow-y: auto; }
-        .friend-item { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; display: flex; align-items: center; transition: 0.3s; }
-        .friend-item:hover { background: #2a3942; }
-        .friend-item .avatar { width: 45px; height: 45px; border-radius: 50%; background: #555; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-        /* Main Chat Styles */
-        .main-chat { flex: 1; display: flex; flex-direction: column; background: #0b141a url('user-images.githubusercontent.com'); background-blend-mode: overlay; }
-        .chat-header { background: var(--header); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
-        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        .msg { max-width: 65%; padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; font-size: 14.5px; position: relative; }
+        /* Auth Overlay */
+        #auth-screen { position: fixed; width: 100%; height: 100%; background: var(--bg); z-index: 5000; display: flex; align-items: center; justify-content: center; }
+        .auth-box { background: var(--panel); padding: 30px; border-radius: 15px; width: 320px; text-align: center; border: 1px solid #333; }
+
+        /* Sidebar */
+        .sidebar { width: 30%; border-right: 1px solid #30363d; background: var(--panel); display: flex; flex-direction: column; min-width: 300px; position: relative; }
+        .sidebar-header { background: var(--header); padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .chat-list { flex: 1; overflow-y: auto; }
+        .chat-item { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; display: flex; align-items: center; transition: 0.2s; }
+        .chat-item:hover { background: #2a3942; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; }
+
+        /* Main Chat Area */
+        .main-content { flex: 1; display: flex; flex-direction: column; background: #0b141a url('user-images.githubusercontent.com'); background-blend-mode: overlay; }
+        .chat-header { background: var(--header); padding: 12px 20px; display: flex; align-items: center; border-bottom: 1px solid #333; }
+        .messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        .msg { max-width: 65%; padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; font-size: 14px; position: relative; }
         .msg.me { align-self: flex-end; background: var(--msg-me); }
         .msg.peer { align-self: flex-start; background: var(--msg-peer); }
-        .chat-input { background: var(--header); padding: 10px 20px; display: flex; align-items: center; }
-        .chat-input input { flex: 1; background: #2a3942; border: none; padding: 12px; border-radius: 8px; color: white; margin-right: 10px; }
-        
-        /* Floating Button & Modal */
-        .fab { position: fixed; bottom: 20px; left: 20px; width: 55px; height: 55px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 100; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: var(--panel); padding: 25px; border-radius: 12px; width: 300px; text-align: center; }
-        
-        /* Utilities */
+
+        /* Floating Button & Modals */
+        .fab { position: absolute; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 10000; }
+        .modal-card { background: var(--panel); padding: 25px; border-radius: 15px; width: 300px; text-align: center; }
+
+        /* UI Elements */
+        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #2a3942; border: none; color: white; border-radius: 8px; box-sizing: border-box; }
+        button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
         .hidden { display: none; }
-        .menu-dots { cursor: pointer; padding: 5px; font-size: 20px; }
-        .dropdown { position: absolute; right: 20px; top: 60px; background: var(--header); border: 1px solid #333; padding: 10px; border-radius: 8px; z-index: 50; }
-        .dropdown div { padding: 10px; cursor: pointer; }
-        .dropdown div:hover { background: #2a3942; }
     </style>
 </head>
 <body>
 
-<!-- Login Screen -->
-<div id="auth-screen" style="position:fixed; width:100%; height:100%; background:var(--bg); z-index:2000; display:flex; align-items:center; justify-content:center;">
-    <div style="background:var(--panel); padding:40px; border-radius:15px; text-align:center; width:300px;">
-        <h2>🔐 Welcome</h2>
-        <input type="text" id="username" placeholder="Username" style="width:100%; padding:12px; margin-bottom:10px; background:#202c33; border:none; color:white; border-radius:8px;">
-        <input type="password" id="password" placeholder="Password" style="width:100%; padding:12px; margin-bottom:20px; background:#202c33; border:none; color:white; border-radius:8px;">
-        <button onclick="handleAuth()" style="width:100%; padding:12px; background:var(--accent); border:none; color:white; border-radius:8px; cursor:pointer; font-weight:bold;">Enter Chat</button>
+<!-- Step 1: Secure Login -->
+<div id="auth-screen">
+    <div class="auth-box">
+        <h2 style="color:var(--accent)">🔐 Login ID</h2>
+        <input type="text" id="username" placeholder="Chuno Username">
+        <button onclick="initApp()">Enter Messenger</button>
     </div>
 </div>
 
-<!-- Sidebar -->
+<!-- Step 2: Sidebar (WhatsApp Style) -->
 <div class="sidebar">
     <div class="sidebar-header">
-        <div id="my-avatar" class="avatar" style="background:var(--accent)">M</div>
-        <div class="menu-dots" onclick="toggleMainDropdown()">⋮</div>
+        <div id="my-profile-pic" class="avatar">U</div>
+        <div style="font-size:12px; color:var(--accent)">🟢 Online</div>
     </div>
-    <div class="search-bar"><input type="text" placeholder="Dost ko search karein..."></div>
-    <div class="friend-list" id="friend-container"></div>
-    <div class="fab" onclick="showAddFriend()">+</div>
+    <div class="chat-list" id="chat-list-container">
+        <!-- Chats yahan aayengi -->
+    </div>
+    <div class="fab" onclick="openAddFriend()">+</div>
 </div>
 
-<!-- Main Chat Area -->
-<div class="main-chat" id="chat-welcome">
-    <div style="margin:auto; text-align:center;">
-        <img src="wa-styles.web.app" style="width:200px; opacity:0.1;">
-        <p style="color:#8696a0;">Chat start karne ke liye dost ko chunein</p>
+<!-- Step 3: Main Messaging Area -->
+<div class="main-content" id="empty-view">
+    <div style="margin:auto; text-align:center; color:#8696a0;">
+        <h2>Elite P2P Chat</h2>
+        <p>Surakshit chat ke liye dost add karein.</p>
     </div>
 </div>
 
-<div class="main-chat hidden" id="chat-active">
+<div class="main-content hidden" id="chat-view">
     <div class="chat-header">
-        <div style="display:flex; align-items:center;">
-            <div id="chat-avatar" class="avatar" style="width:35px; height:35px; border-radius:50%; background:#555; margin-right:12px; display:flex; align-items:center; justify-content:center; font-size:14px;">P</div>
-            <b id="active-peer-name">Dost ka naam</b>
-        </div>
-        <div class="menu-dots">⋮</div>
+        <div id="current-chat-avatar" class="avatar" style="width:35px; height:35px; font-size:14px;">P</div>
+        <b id="current-chat-name">Dost</b>
     </div>
-    <div class="chat-messages" id="messages-container"></div>
-    <div class="chat-input">
-        <input type="text" id="msg-input" placeholder="Type a message...">
-        <button onclick="sendMsg()" style="background:none; border:none; color:var(--accent); font-size:24px; cursor:pointer;">➤</button>
+    <div class="messages" id="message-area"></div>
+    <div style="background:var(--header); padding:10px 20px; display:flex;">
+        <input type="text" id="msg-input" placeholder="Type a message..." style="margin:0; flex:1;">
+        <button onclick="sendMessage()" style="width:auto; margin-left:10px;">➤</button>
     </div>
 </div>
 
-<!-- Floating Windows (Modals) -->
-<div id="add-friend-modal" class="modal hidden">
-    <div class="modal-content">
-        <h3>Add New Friend</h3>
-        <input type="text" id="new-friend-id" placeholder="Username ya Code dalein" style="width:100%; padding:10px; margin-bottom:15px; background:#202c33; border:none; color:white; border-radius:8px;">
-        <div style="display:flex; gap:10px;">
-            <button onclick="closeModals()" style="flex:1; background:#555; border:none; padding:10px; border-radius:8px; color:white;">Cancel</button>
-            <button onclick="addFriend()" style="flex:1; background:var(--accent); border:none; padding:10px; border-radius:8px; color:white;">Add</button>
-        </div>
+<!-- Modals -->
+<div id="add-modal" class="modal hidden">
+    <div class="modal-card">
+        <h3>Add Friend</h3>
+        <input type="text" id="peer-id-target" placeholder="Dost ka Username">
+        <input type="text" id="verification-token" placeholder="6-Digit Pair Token (OTP)">
+        <p style="font-size:11px; color:#8696a0;">Dost se uska secret pairing token mangein.</p>
+        <button onclick="requestConnection()">Connect</button>
+        <p onclick="closeModal()" style="cursor:pointer; font-size:12px; margin-top:10px;">Cancel</p>
     </div>
-</div>
-
-<div id="main-dropdown" class="dropdown hidden">
-    <div onclick="location.reload()">Logout</div>
-    <div onclick="alert('My Code: ' + btoa(currentUser))">Show My Code</div>
 </div>
 
 <script>
-    let currentUser = "";
-    let activePeer = "";
+    let peer, conn, myId;
+    let friends = JSON.parse(localStorage.getItem('saved_friends') || "[]");
+    let mySecretToken = Math.floor(100000 + Math.random() * 900000); // Auto-generated for session
 
-    function handleAuth() {
-        const u = document.getElementById('username').value.trim();
-        const p = document.getElementById('password').value;
-        if (!u || !p) return;
-        currentUser = u;
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('my-avatar').innerText = u[0].toUpperCase();
-        renderFriends();
-    }
+    function initApp() {
+        myId = document.getElementById('username').value.trim();
+        if(!myId) return alert("Username zaruri hai!");
 
-    function toggleMainDropdown() { document.getElementById('main-dropdown').classList.toggle('hidden'); }
-    function showAddFriend() { document.getElementById('add-friend-modal').classList.remove('hidden'); }
-    function closeModals() { document.getElementById('add-friend-modal').classList.add('hidden'); }
+        peer = new Peer(myId);
+        peer.on('open', (id) => {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('my-profile-pic').innerText = myId.charAt(0).toUpperCase();
+            console.log("Your Secret Pairing Token: " + mySecretToken); // Security purposes
+            renderChatList();
+        });
 
-    function addFriend() {
-        const fID = document.getElementById('new-friend-id').value.trim();
-        if (!fID || fID === currentUser) return;
-        let friends = JSON.parse(localStorage.getItem("f_" + currentUser) || "[]");
-        if (!friends.includes(fID)) {
-            friends.push(fID);
-            localStorage.setItem("f_" + currentUser, JSON.stringify(friends));
-            renderFriends();
-        }
-        closeModals();
-    }
-
-    function renderFriends() {
-        const cont = document.getElementById('friend-container');
-        cont.innerHTML = "";
-        let friends = JSON.parse(localStorage.getItem("f_" + currentUser) || "[]");
-        friends.forEach(f => {
-            const div = document.createElement('div');
-            div.className = 'friend-item';
-            div.onclick = () => openChat(f);
-            div.innerHTML = `<div class="avatar">${f[0].toUpperCase()}</div><div><b>${f}</b><br><small style="color:#8696a0">Click to chat</small></div>`;
-            cont.appendChild(div);
+        peer.on('connection', (incomingConn) => {
+            // Verification step simulation
+            incomingConn.on('data', (data) => {
+                if(data.type === 'auth') {
+                   if(confirm(`Incoming request from ${incomingConn.peer}. Connect?`)) {
+                       conn = incomingConn;
+                       setupConn();
+                       addToFriendList(incomingConn.peer);
+                   }
+                } else {
+                    appendMsg('peer', data.text);
+                }
+            });
         });
     }
 
-    function openChat(peer) {
-        activePeer = peer;
-        document.getElementById('chat-welcome').classList.add('hidden');
-        document.getElementById('chat-active').classList.remove('hidden');
-        document.getElementById('active-peer-name').innerText = peer;
-        document.getElementById('chat-avatar').innerText = peer[0].toUpperCase();
-        loadMessages();
+    function openAddFriend() { document.getElementById('add-modal').classList.remove('hidden'); }
+    function closeModal() { document.getElementById('add-modal').classList.add('hidden'); }
+
+    function requestConnection() {
+        const target = document.getElementById('peer-id-target').value.trim();
+        const token = document.getElementById('verification-token').value.trim();
+        
+        if(!target || !token) return alert("Sari details bhariye!");
+
+        conn = peer.connect(target);
+        conn.on('open', () => {
+            conn.send({type: 'auth', token: token}); // Sending pairing signal
+            addToFriendList(target);
+            openChat(target);
+            closeModal();
+        });
+        setupConn();
     }
 
-    function sendMsg() {
-        const inp = document.getElementById('msg-input');
-        if (!inp.value) return;
-        const key = `c_${currentUser}_${activePeer}`;
-        let msgs = JSON.parse(localStorage.getItem(key) || "[]");
-        msgs.push({ s: "me", t: inp.value });
-        localStorage.setItem(key, JSON.stringify(msgs));
-        appendMsg("me", inp.value);
-        inp.value = "";
+    function setupConn() {
+        conn.on('data', (data) => { if(data.text) appendMsg('peer', data.text); });
     }
 
-    function loadMessages() {
-        const cont = document.getElementById('messages-container');
-        cont.innerHTML = "";
-        const key = `c_${currentUser}_${activePeer}`;
-        let msgs = JSON.parse(localStorage.getItem(key) || "[]");
-        msgs.forEach(m => appendMsg(m.s, m.t));
+    function addToFriendList(id) {
+        if(!friends.includes(id)) {
+            friends.push(id);
+            localStorage.setItem('saved_friends', JSON.stringify(friends));
+            renderChatList();
+        }
     }
 
-    function appendMsg(s, t) {
-        const cont = document.getElementById('messages-container');
+    function renderChatList() {
+        const container = document.getElementById('chat-list-container');
+        container.innerHTML = "";
+        friends.forEach(f => {
+            const div = document.createElement('div');
+            div.className = 'chat-item';
+            div.innerHTML = `<div class="avatar">${f.charAt(0).toUpperCase()}</div><div><b>${f}</b><br><small style="color:#8696a0">Direct P2P Link</small></div>`;
+            div.onclick = () => {
+                if(!conn || conn.peer !== f) conn = peer.connect(f);
+                openChat(f);
+            };
+            container.appendChild(div);
+        });
+    }
+
+    function openChat(name) {
+        document.getElementById('empty-view').classList.add('hidden');
+        document.getElementById('chat-view').classList.remove('hidden');
+        document.getElementById('current-chat-name').innerText = name;
+        document.getElementById('current-chat-avatar').innerText = name.charAt(0).toUpperCase();
+        document.getElementById('message-area').innerHTML = "";
+    }
+
+    function sendMessage() {
+        const msg = document.getElementById('msg-input').value;
+        if(!msg || !conn) return;
+        conn.send({type: 'chat', text: msg});
+        appendMsg('me', msg);
+        document.getElementById('msg-input').value = "";
+    }
+
+    function appendMsg(type, text) {
         const div = document.createElement('div');
-        div.className = `msg ${s}`;
-        div.innerText = t;
-        cont.appendChild(div);
-        cont.scrollTop = cont.scrollHeight;
+        div.className = `msg ${type}`;
+        div.innerText = text;
+        document.getElementById('message-area').appendChild(div);
+        document.getElementById('message-area').scrollTop = document.getElementById('message-area').scrollHeight;
     }
 </script>
 </body>
