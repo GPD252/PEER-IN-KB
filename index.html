@@ -3,188 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite P2P Messenger 2025</title>
-    <!-- Fast PeerJS Library -->
-    <script src="cdnjs.cloudflare.com"></script>
+    <title>Pro P2P Messenger 2025</title>
+    <!-- Fast Library Load -->
+    <script src="cdn.jsdelivr.net"></script>
     <style>
-        :root { --bg: #0b141a; --panel: #111b21; --header: #202c33; --accent: #00a884; --text: #e9edef; --msg-me: #005c4b; --msg-peer: #202c33; }
+        :root { --bg: #0b141a; --sidebar: #111b21; --header: #202c33; --accent: #00a884; --text: #e9edef; --msg-me: #005c4b; --msg-peer: #202c33; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Auth Overlay */
-        #auth-screen { position: fixed; width: 100%; height: 100%; background: var(--bg); z-index: 5000; display: flex; align-items: center; justify-content: center; }
-        .auth-box { background: var(--panel); padding: 30px; border-radius: 15px; width: 320px; text-align: center; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        /* Layout */
-        .sidebar { width: 30%; min-width: 300px; border-right: 1px solid #333; background: var(--panel); display: flex; flex-direction: column; position: relative; }
-        .sidebar-header { background: var(--header); padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .chat-list { flex: 1; overflow-y: auto; }
-        .chat-item { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; display: flex; align-items: center; }
-        .chat-item:hover { background: #2a3942; }
+        /* Auth System (Register/Login) */
+        #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: var(--sidebar); padding: 30px; border-radius: 12px; width: 320px; text-align: center; border: 1px solid #333; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #333; }
+        .tab { flex: 1; padding: 10px; cursor: pointer; opacity: 0.5; transition: 0.3s; }
+        .tab.active { opacity: 1; border-bottom: 3px solid var(--accent); color: var(--accent); font-weight: bold; }
 
-        .main-content { flex: 1; display: flex; flex-direction: column; background: #0b141a url('user-images.githubusercontent.com'); background-blend-mode: overlay; }
-        .chat-header { background: var(--header); padding: 12px 20px; display: flex; align-items: center; border-bottom: 1px solid #333; }
+        /* Main Layout */
+        .sidebar { width: 30%; min-width: 300px; border-right: 1px solid #333; background: var(--sidebar); display: flex; flex-direction: column; }
+        .sidebar-header { background: var(--header); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .chat-list { flex: 1; overflow-y: auto; }
+        .chat-item { padding: 15px; display: flex; align-items: center; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; }
+        .chat-item:hover { background: #2a3942; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; background: #555; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; color: white; }
+
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: #0b141a url('user-images.githubusercontent.com'); background-blend-mode: overlay; }
+        .chat-header { background: var(--header); padding: 10px 20px; display: flex; align-items: center; border-bottom: 1px solid #333; }
         .messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        .msg { max-width: 65%; padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; font-size: 14px; }
+        .msg { max-width: 65%; padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; font-size: 14px; color: white; }
         .msg.me { align-self: flex-end; background: var(--msg-me); }
         .msg.peer { align-self: flex-start; background: var(--msg-peer); }
 
-        /* UI Elements */
-        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #2a3942; border: none; color: white; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-        button { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; font-size: 15px; }
-        .fab { position: absolute; bottom: 25px; right: 25px; width: 55px; height: 55px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        /* Controls */
+        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #2a3942; border: none; color: white; border-radius: 8px; box-sizing: border-box; }
+        button { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
+        button:hover { opacity: 0.9; transform: scale(1.01); }
+        .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; }
+        
         .hidden { display: none; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 10000; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 10000; }
     </style>
 </head>
 <body>
 
-<!-- Register/Login Section -->
-<div id="auth-screen">
-    <div class="auth-box">
-        <h2 style="color:var(--accent)">🔐 Elite Chat</h2>
-        <div id="auth-tabs" style="display:flex; margin-bottom:15px; border-bottom:1px solid #444;">
-            <div onclick="setAuth('login')" id="tab-login" style="flex:1; cursor:pointer; padding:10px; border-bottom:2px solid var(--accent);">Login</div>
-            <div onclick="setAuth('reg')" id="tab-reg" style="flex:1; cursor:pointer; padding:10px; opacity:0.5;">Register</div>
+<!-- Step 1: Login & Register UI -->
+<div id="auth-overlay">
+    <div class="auth-card">
+        <h2 style="color:var(--accent)">🔐 Messenger 2025</h2>
+        <div class="auth-tabs">
+            <div id="tab-l" class="tab active" onclick="switchAuth('login')">Login</div>
+            <div id="tab-r" class="tab" onclick="switchAuth('register')">Register</div>
         </div>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="handleAuth()" id="auth-btn">Enter Messenger</button>
+        <input type="text" id="auth-user" placeholder="Username / ID">
+        <input type="password" id="auth-pass" placeholder="Password">
+        <button id="auth-btn" onclick="performAuth()">Enter Chat</button>
+        <p id="auth-status" style="font-size: 12px; margin-top: 10px; color: #888;">Unique ID se login karein</p>
     </div>
 </div>
 
-<!-- Sidebar -->
+<!-- Step 2: WhatsApp Interface -->
 <div class="sidebar">
     <div class="sidebar-header">
-        <div id="my-pic" style="width:40px; height:40px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">U</div>
-        <b id="my-name-display">Online</b>
+        <div id="my-icon" class="avatar" style="background:var(--accent)">U</div>
+        <div style="font-size: 12px; color: var(--accent)">● Online</div>
     </div>
-    <div class="chat-list" id="chat-list"></div>
+    <div class="chat-list" id="sidebar-list"></div>
     <div class="fab" onclick="showAddFriend()">+</div>
 </div>
 
-<!-- Chat Content -->
-<div class="main-content" id="chat-area">
-    <div class="chat-header hidden" id="chat-head">
-        <b id="active-peer-name">Dost</b>
+<div class="main-chat" id="welcome-view">
+    <div style="margin: auto; text-align: center; opacity: 0.3;">
+        <img src="cdn-icons-png.flaticon.com" width="100"><br>
+        <h3>Private P2P Messaging</h3>
+        <p>Chat shuru karne ke liye dost ko add karein.</p>
     </div>
-    <div class="messages" id="msgs">
-        <div style="margin:auto; text-align:center; opacity:0.3; padding:50px;">
-            <img src="cdn-icons-png.flaticon.com" width="80"><br>
-            Secure P2P Chat Start Karein
-        </div>
+</div>
+
+<div class="main-chat hidden" id="active-chat-view">
+    <div class="chat-header">
+        <div id="peer-icon" class="avatar" style="width:35px; height:35px; font-size:14px;">P</div>
+        <b id="peer-name-title">Dost</b>
     </div>
-    <div class="chat-input hidden" id="chat-foot" style="background:var(--header); padding:10px 20px; display:flex;">
-        <input type="text" id="m-input" placeholder="Type a message..." style="margin:0; flex:1;">
-        <button onclick="sendMsg()" style="width:auto; margin-left:10px; padding:10px 20px;">Send</button>
+    <div class="messages" id="chat-msgs"></div>
+    <div style="background:var(--header); padding:10px 20px; display:flex; align-items:center;">
+        <input type="text" id="msg-input" placeholder="Type a message..." style="margin:0; flex:1;">
+        <button onclick="send()" style="width:auto; margin-left:10px; padding:10px 20px;">Send</button>
     </div>
 </div>
 
 <!-- Add Friend Modal -->
 <div id="add-modal" class="modal hidden">
-    <div class="auth-box">
-        <h3>Add Friend</h3>
+    <div class="auth-card">
+        <h3>Add Contact</h3>
         <input type="text" id="target-id" placeholder="Dost ka Username">
-        <input type="text" id="pair-token" placeholder="Verification Code (Any 6 digit)">
-        <button onclick="connectFriend()">Verify & Add</button>
-        <button onclick="hideAddFriend()" style="background:#555;">Cancel</button>
+        <input type="text" id="verify-code" placeholder="Verification Token (6 Digit)">
+        <button onclick="addNewFriend()">Connect & Verify</button>
+        <button onclick="hideAddFriend()" style="background:#444; margin-top:5px;">Cancel</button>
     </div>
 </div>
 
 <script>
     let authMode = 'login';
-    let peer, conn, myId;
-    let friends = JSON.parse(localStorage.getItem('f_list') || "[]");
+    let myId, peerObj, activeConn;
+    let friendList = JSON.parse(localStorage.getItem('my_friends_2025') || "[]");
 
-    function setAuth(m) {
+    function switchAuth(m) {
         authMode = m;
-        document.getElementById('tab-login').style.opacity = (m === 'login' ? '1' : '0.5');
-        document.getElementById('tab-reg').style.opacity = (m === 'reg' ? '1' : '0.5');
-        document.getElementById('auth-btn').innerText = (m === 'login' ? 'Login Now' : 'Create Account');
+        document.getElementById('tab-l').className = m === 'login' ? 'tab active' : 'tab';
+        document.getElementById('tab-r').className = m === 'register' ? 'tab active' : 'tab';
+        document.getElementById('auth-btn').innerText = m === 'login' ? 'Login' : 'Create Account';
     }
 
-    function handleAuth() {
-        const u = document.getElementById('username').value.trim();
-        const p = document.getElementById('password').value;
+    function performAuth() {
+        const u = document.getElementById('auth-user').value.trim();
+        const p = document.getElementById('auth-pass').value;
         if(!u || !p) return alert("Sari details bhariye!");
 
-        if(authMode === 'reg') {
-            localStorage.setItem("p_" + u, p);
+        if(authMode === 'register') {
+            if(localStorage.getItem("pw_"+u)) return alert("ID pehle se hai!");
+            localStorage.setItem("pw_"+u, p);
             alert("Registration Safal! Ab Login karein.");
-            setAuth('login');
+            switchAuth('login');
         } else {
-            if(localStorage.getItem("p_" + u) === p) {
+            if(localStorage.getItem("pw_"+u) === p) {
                 myId = u;
-                startApp();
+                startMessenger();
             } else { alert("Galat ID ya Password!"); }
         }
     }
 
-    function startApp() {
-        peer = new Peer(myId);
-        peer.on('open', (id) => {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('my-pic').innerText = myId.charAt(0).toUpperCase();
-            renderFriends();
+    function startMessenger() {
+        peerObj = new Peer(myId);
+        peerObj.on('open', (id) => {
+            document.getElementById('auth-overlay').classList.add('hidden');
+            document.getElementById('my-icon').innerText = myId.charAt(0).toUpperCase();
+            updateSidebar();
         });
 
-        peer.on('connection', (c) => {
-            conn = c;
-            conn.on('data', d => appendMsg('peer', d));
-            if(!friends.includes(c.peer)) { friends.push(c.peer); localStorage.setItem('f_list', JSON.stringify(friends)); renderFriends(); }
-            openChat(c.peer);
+        peerObj.on('connection', (conn) => {
+            activeConn = conn;
+            setupConn();
+            if(!friendList.includes(conn.peer)) {
+                friendList.push(conn.peer);
+                localStorage.setItem('my_friends_2025', JSON.stringify(friendList));
+                updateSidebar();
+            }
+            openChatWindow(conn.peer);
         });
     }
 
     function showAddFriend() { document.getElementById('add-modal').classList.remove('hidden'); }
     function hideAddFriend() { document.getElementById('add-modal').classList.add('hidden'); }
 
-    function connectFriend() {
+    function addNewFriend() {
         const tid = document.getElementById('target-id').value.trim();
-        const token = document.getElementById('pair-token').value;
-        if(!tid || !token) return alert("Verification Code aur ID zaruri hai!");
-
-        conn = peer.connect(tid);
-        conn.on('open', () => {
-            if(!friends.includes(tid)) { friends.push(tid); localStorage.setItem('f_list', JSON.stringify(friends)); renderFriends(); }
-            openChat(tid);
+        if(!tid || tid === myId) return alert("Sahi ID dalein!");
+        
+        activeConn = peerObj.connect(tid);
+        activeConn.on('open', () => {
+            if(!friendList.includes(tid)) {
+                friendList.push(tid);
+                localStorage.setItem('my_friends_2025', JSON.stringify(friendList));
+                updateSidebar();
+            }
+            openChatWindow(tid);
             hideAddFriend();
         });
-        conn.on('data', d => appendMsg('peer', d));
+        setupConn();
     }
 
-    function renderFriends() {
-        const cont = document.getElementById('chat-list');
-        cont.innerHTML = "";
-        friends.forEach(f => {
+    function setupConn() {
+        activeConn.on('data', data => appendMessage('peer', data));
+    }
+
+    function updateSidebar() {
+        const container = document.getElementById('sidebar-list');
+        container.innerHTML = "";
+        friendList.forEach(f => {
             const div = document.createElement('div');
             div.className = 'chat-item';
-            div.innerHTML = `<div style="width:40px; height:40px; border-radius:50%; background:#444; display:flex; align-items:center; justify-content:center; margin-right:15px;">${f.charAt(0).toUpperCase()}</div><b>${f}</b>`;
-            div.onclick = () => { conn = peer.connect(f); openChat(f); };
-            cont.appendChild(div);
+            div.innerHTML = `<div class="avatar">${f.charAt(0).toUpperCase()}</div> <div><b>${f}</b><br><small style="color:#888">Click to chat</small></div>`;
+            div.onclick = () => { activeConn = peerObj.connect(f); openChatWindow(f); setupConn(); };
+            container.appendChild(div);
         });
     }
 
-    function openChat(name) {
-        document.getElementById('chat-head').classList.remove('hidden');
-        document.getElementById('chat-foot').classList.remove('hidden');
-        document.getElementById('active-peer-name').innerText = name;
-        document.getElementById('msgs').innerHTML = "";
+    function openChatWindow(name) {
+        document.getElementById('welcome-view').classList.add('hidden');
+        document.getElementById('active-chat-view').classList.remove('hidden');
+        document.getElementById('peer-name-title').innerText = name;
+        document.getElementById('peer-icon').innerText = name.charAt(0).toUpperCase();
+        document.getElementById('chat-msgs').innerHTML = "";
     }
 
-    function sendMsg() {
-        const val = document.getElementById('m-input').value;
-        if(!val || !conn) return;
-        conn.send(val);
-        appendMsg('me', val);
-        document.getElementById('m-input').value = "";
+    function send() {
+        const val = document.getElementById('msg-input').value;
+        if(!val || !activeConn) return;
+        activeConn.send(val);
+        appendMessage('me', val);
+        document.getElementById('msg-input').value = "";
     }
 
-    function appendMsg(type, text) {
+    function appendMessage(type, text) {
         const div = document.createElement('div');
         div.className = `msg ${type}`;
         div.innerText = text;
-        document.getElementById('msgs').appendChild(div);
-        document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
+        document.getElementById('chat-msgs').appendChild(div);
+        document.getElementById('chat-msgs').scrollTop = document.getElementById('chat-msgs').scrollHeight;
     }
 </script>
 </body>
