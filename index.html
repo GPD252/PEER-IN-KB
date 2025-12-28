@@ -3,87 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P2P Cloud Messenger 2025</title>
-    <!-- Firebase Libraries -->
+    <title>P2P Pro Messenger 2025</title>
+    <!-- Firebase SDK -->
     <script src="www.gstatic.com"></script>
     <script src="www.gstatic.com"></script>
     <style>
-        :root { --bg: #0d1117; --green: #238636; --text: #c9d1d9; }
+        :root { --bg: #0d1117; --green: #238636; --blue: #1f6feb; --text: #c9d1d9; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .box { width: 90%; max-width: 400px; background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #30363d; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-        input { width: 100%; background: #0d1117; border: 1px solid #30363d; color: white; padding: 12px; margin: 10px 0; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; background: var(--green); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 6px; font-weight: bold; margin-top: 10px; }
-        button:disabled { background: #1b4721; cursor: not-allowed; }
+        .box { width: 90%; max-width: 400px; background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #30363d; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input { width: 100%; background: #0d1117; border: 1px solid #30363d; color: white; padding: 12px; margin: 10px 0; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        button { flex: 1; padding: 12px; cursor: pointer; border-radius: 6px; font-weight: bold; border: none; color: white; transition: 0.2s; }
+        .login-btn { background: var(--green); }
+        .reg-btn { background: var(--blue); }
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
         .hidden { display: none; }
-        #chat-window { height: 250px; overflow-y: auto; background: #0d1117; border: 1px solid #30363d; padding: 10px; margin: 10px 0; text-align: left; border-radius: 6px; font-size: 14px; }
+        #chat-window { height: 250px; overflow-y: auto; background: #0d1117; border: 1px solid #30363d; padding: 10px; margin: 10px 0; text-align: left; border-radius: 6px; border-left: 4px solid var(--green); }
         .video-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        video { width: 100%; border-radius: 6px; background: #000; height: 100px; border: 1px solid #444; }
+        video { width: 100%; border-radius: 6px; background: #000; height: 110px; border: 1px solid #444; }
+        #status-msg { font-size: 12px; color: #f0ad4e; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
+<!-- Step 1: Authentication Screen -->
 <div id="auth-screen" class="box">
-    <h2>🔐 Login / Register</h2>
-    <input type="text" id="my-id" placeholder="Apni Unique ID (e.g. Rahul123)">
-    <input type="password" id="my-pw" placeholder="Password set karein">
-    <button id="login-btn" onclick="handleAuth()">Enter Messenger</button>
-    <p style="font-size: 11px; color: #8b949e; margin-top: 10px;">ID aur Password yaad rakhein data wapas pane ke liye.</p>
+    <h2>🔐 Secure Access</h2>
+    <div id="status-msg">Database se connect ho raha hai...</div>
+    <input type="text" id="my-id" placeholder="Unique Username (ID)">
+    <input type="password" id="my-pw" placeholder="Password">
+    <div class="btn-group">
+        <button class="reg-btn" onclick="handleAuth('register')">Register</button>
+        <button class="login-btn" onclick="handleAuth('login')">Login</button>
+    </div>
 </div>
 
+<!-- Step 2: Connection Screen -->
 <div id="connect-screen" class="box hidden">
     <h3>Namaste, <span id="user-display" style="color:var(--green)"></span></h3>
-    <p style="font-size: 13px;">Dost ki ID dalkar connect karein:</p>
-    <input type="text" id="peer-id" placeholder="Dost ka Username">
-    <button onclick="startCall()">Connect & Start Chat</button>
+    <p>Dost ka Username dalein:</p>
+    <input type="text" id="peer-id" placeholder="Dost ki ID">
+    <button style="background: var(--blue); width: 100%;" onclick="startCall()">Connect Now</button>
 </div>
 
+<!-- Step 3: Chat/Video Screen -->
 <div id="chat-screen" class="box hidden" style="max-width: 600px;">
     <div class="video-box">
         <video id="localVideo" autoplay muted playsinline></video>
         <video id="remoteVideo" autoplay playsinline></video>
     </div>
     <div id="chat-window"></div>
-    <input type="text" id="msg-input" placeholder="Type message...">
-    <button onclick="sendMsg()">Send</button>
+    <div style="display: flex; gap: 5px;">
+        <input type="text" id="msg-input" placeholder="Message..." style="margin: 0;">
+        <button onclick="sendMsg()" style="flex: 0; padding: 0 20px; background: var(--green);">Bhejein</button>
+    </div>
 </div>
 
 <script>
-    // 2025 Public Signaling Config
-    const firebaseConfig = {
-        databaseURL: "p2p-chat-2025-default-rtdb.firebaseio.com"
-    };
+    // Firebase Setup for 2025 Direct Messaging
+    const firebaseConfig = { databaseURL: "p2p-direct-2025-default-rtdb.firebaseio.com" };
     
-    try {
+    // Initialize Firebase
+    if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
-    } catch (e) {
-        console.log("Firebase already initialized");
     }
-    
     const db = firebase.database();
+    
+    // Check connection
+    db.ref(".info/connected").on("value", (snap) => {
+        const msg = document.getElementById('status-msg');
+        if (snap.val() === true) { msg.innerText = "Online - Ready to Chat"; msg.style.color = "#238636"; }
+        else { msg.innerText = "Offline - Connecting..."; msg.style.color = "#da3633"; }
+    });
+
     let myId, peerId, pc, dc, localStream;
     const ice = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
-    async function handleAuth() {
+    async function handleAuth(type) {
         myId = document.getElementById('my-id').value.trim();
         const pw = document.getElementById('my-pw').value;
-        if(!myId || !pw) return alert("ID aur Password zaruri hai!");
-
-        document.getElementById('login-btn').disabled = true;
-        document.getElementById('login-btn').innerText = "Connecting...";
+        if(!myId || !pw) return alert("Kripya ID aur Password bhariye!");
 
         const userRef = db.ref('users/' + myId);
         const snap = await userRef.once('value');
 
-        if(snap.exists()) {
-            if(snap.val().pw !== pw) {
-                alert("Wrong Password!");
-                location.reload();
-                return;
-            }
+        if(type === 'register') {
+            if(snap.exists()) return alert("ID pehle se maujood hai! Login karein.");
+            await userRef.set({ pw: pw, joined: Date.now() });
+            alert("Registration Safal! Ab Login karein.");
         } else {
-            await userRef.set({ pw: pw, created: Date.now() });
+            if(!snap.exists() || snap.val().pw !== pw) return alert("Galat ID ya Password!");
+            enterApp();
         }
+    }
 
+    function enterApp() {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('connect-screen').classList.remove('hidden');
         document.getElementById('user-display').innerText = myId;
@@ -93,10 +108,11 @@
     function listenForSignals() {
         db.ref('signals/' + myId).on('value', async snap => {
             const data = snap.val();
-            if(data && data.type === "offer" && !pc) {
-                if(confirm(data.from + " is calling. Accept?")) {
+            if(data && data.type === "offer") {
+                if(confirm(data.from + " connect hona chahte hain?")) {
                     peerId = data.from;
                     await acceptCall(data.sdp);
+                    db.ref('signals/' + myId).remove(); // Cleanup
                 }
             }
         });
@@ -104,7 +120,7 @@
 
     async function startCall() {
         peerId = document.getElementById('peer-id').value.trim();
-        if(!peerId || peerId === myId) return alert("Valid Peer ID dalein!");
+        if(!peerId || peerId === myId) return alert("Valid ID dalein!");
 
         localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
         document.getElementById('localVideo').srcObject = localStream;
@@ -124,6 +140,7 @@
             if(data && data.type === "answer") {
                 await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(data.sdp)));
                 showChat();
+                db.ref('signals/' + myId).remove();
             }
         });
     }
@@ -146,7 +163,7 @@
 
     function setupDC() {
         dc.onopen = () => showChat();
-        dc.onmessage = e => appendMsg("Partner", e.data);
+        dc.onmessage = e => appendMsg("Dost", e.data);
     }
 
     function showChat() {
@@ -158,7 +175,7 @@
         const i = document.getElementById('msg-input');
         if(!i.value) return;
         dc.send(i.value);
-        appendMsg("Me", i.value);
+        appendMsg("Main", i.value);
         i.value = "";
     }
 
@@ -170,4 +187,3 @@
 </script>
 </body>
 </html>
-
